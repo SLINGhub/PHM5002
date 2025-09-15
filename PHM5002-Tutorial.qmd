@@ -1,7 +1,8 @@
 ---
-title: "PHM5002: Metabolomics Data Preprocessing and QC"
-author: "Bo Burla"
-affiliation: "Singapore Lipidomics Incubator @ NUS"
+title: "PHM5002: Metabolomics Data Preprocessing"
+author:
+  name: "Bo Burla"
+  affiliation: "Singapore Lipidomics Incubator, NUS"
 subtitle: 'From Raw Data to Reliable Analytical Results'
 date: "`r Sys.Date()`"
 format:

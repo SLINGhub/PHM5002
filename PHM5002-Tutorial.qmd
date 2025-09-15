@@ -21,7 +21,7 @@ knitr::opts_chunk$set(collapse = TRUE, echo = TRUE, message = TRUE, warning = FA
 
 ## 1. Introduction
 
-Welcome to this R-based tutorial on data processing of a targeted plasma lipidomics dataset. We will use the dataset published by [Tan et al., *Arterioscler Thromb Vasc Biol*, 2022](https://www.ahajournals.org/doi/suppl/10.1161/ATVBAHA.121.316847) as an example. In that study, a panel of 413 plasma lipids was quantified by liquid chromatography–tandem mass spectrometry (LC–MS/MS) using multiple reaction monitoring (MRM). We begin with preprocessed LC-MS raw data, i.e., peak-area data that were generated using the MRMkit software ([Teo et al., *Anal. Chem.,* 2020](https://dx.doi.org/10.1021/acs.analchem.0c03060)). See Figure 1 for an overview of the typical data processing flow, of which we will cover aspects of the postprocessing, quality control and reporting.
+Welcome to this R-based tutorial on data processing of a targeted plasma lipidomics dataset. We will use the dataset published by [Tan et al., *Arterioscler Thromb Vasc Biol*, 2022](https://www.ahajournals.org/doi/10.1161/ATVBAHA.121.316847) as an example. In that study, a panel of 413 plasma lipids was quantified by liquid chromatography–tandem mass spectrometry (LC–MS/MS) using multiple reaction monitoring (MRM). We begin with preprocessed LC-MS raw data, i.e., peak-area data that were generated using the MRMkit software ([Teo et al., *Anal. Chem.,* 2020](https://dx.doi.org/10.1021/acs.analchem.0c03060)). See Figure 1 for an overview of the typical data processing flow, of which we will cover aspects of the postprocessing, quality control and reporting.
 
 ![**Figure 1**: Data Processing Overview](images/workflow.png){fig-align="center" width="319"}
 

@@ -14,7 +14,7 @@ Please ensure to have R, RStudio and required R packages installed **before the 
 
 -   RStudio (Version \>= 2024.04). Download from <https://posit.co/download/rstudio-desktop/>. Check your `RStudio` version by clicking *About RStudio* under the menu *Help.*
 
--   To run the code, following R packages must be installed **before** the start of the tutorial: `tidyverse`, `broom`, and `here`. To convert the notebook to HTML or DOCX, also the packages `knitr` and `rnotebooks` are required. Install all these packages via `install.packages(c("tidyverse", "broom", "here", "knitr", "rnotebooks"))`
+-   To run the code, following R packages must be installed **before** the start of the tutorial: `tidyverse`, `broom`, and `here`. To convert the notebook to HTML or DOCX, also the packages `knitr` and `rmarkdown` are required. Install all these packages via `install.packages(c("tidyverse", "broom", "here", "knitr", "rmarkdown"))`
 
 ### Download the R scripts
 

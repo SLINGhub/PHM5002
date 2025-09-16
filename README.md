@@ -11,10 +11,8 @@ R-based tutorial for processing targeted plasma lipidomics data using the datase
 Please ensure to have R, RStudio and required R packages installed **before the start of the tutorial**:
 
 -   R (version 4.4, or higher). Download from <https://cloud.r-project.org/>. Check your R version by running following command in your console: `R.Version()$version.string`
-
 -   RStudio (Version \>= 2024.04). Download from <https://posit.co/download/rstudio-desktop/>. Check your `RStudio` version by clicking *About RStudio* under the menu *Help.*
-
--   To run the code, following R packages must be installed **before** the start of the tutorial: `tidyverse` and `here`. To convert the notebook to HTML or DOCX, also the packages `knitr` and `rmarkdown` are required. Install all these packages via `install.packages(c("tidyverse", "here", "broom", "knitr", "rmarkdown"))`
+-   To run the code, following R packages must be installed **before** the start of the tutorial: `tidyverse`, `broom`, and `here`. To convert the notebook to HTML or DOCX, also the packages `knitr` and `rmarkdown` are required. Install all these packages via `install.packages(c("tidyverse", "broom", "here", "knitr", "rmarkdown"))`
 
 ### Download the project
 

@@ -5,3 +5,43 @@
 .Rhistory
 .DS_Store
 .quarto
+
+
+# Quarto build artifacts
+_site/
+_freeze/
+.quarto/
+
+# Quarto/knitr caches (R)
+*_cache/
+cache/
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+.Rapp.history
+
+# Jupyter
+.ipynb_checkpoints/
+
+
+
+# Outputs (optional — ignore if you don't want to track rendered files)
+# Uncomment formats you don't want in git
+# *.html
+# *.pdf
+*.docx
+# *.pptx
+# *.odt
+# *.epub
+# *.md
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secrets / env files
+.env
+.env.*
+.Renviron

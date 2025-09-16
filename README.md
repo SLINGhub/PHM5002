@@ -1,4 +1,4 @@
-# PHM5002 - Metabolomics Data Preprocessing
+# PHM5002 - Metabolomics Data Postprocessing
 
 *From Raw Data to Reliable Analytical Results*
 

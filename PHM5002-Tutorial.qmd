@@ -571,7 +571,7 @@ plot_pca(d_filtered, conc_adj)
 
 ## 20. Saving Final Dataset (Full Dataset)
 
-We now save the final, drift-corrected and QC-filtered concentration data as a wide CSV table, which then will be used for Part 2. Have fun! :)
+We save the final, drift-corrected and QC-filtered concentration data as a wide CSV table.
 
 ```{r save-processed-data-full}
 

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Bo Burla">
-<meta name="dcterms.date" content="2025-09-15">
+<meta name="dcterms.date" content="2025-09-17">
 
 <title>PHM5002: Metabolomics Data Preprocessing</title>
 <style>
@@ -60,7 +60,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="PHM5002-Tutorial_files/libs/clipboard/clipboard.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="PHM5002-Tutorial_files/libs/clipboard/clipboard.min.js"></script>
 <script src="PHM5002-Tutorial_files/libs/quarto-html/quarto.js" type="module"></script>
 <script src="PHM5002-Tutorial_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="PHM5002-Tutorial_files/libs/quarto-html/popper.min.js"></script>
@@ -71,6 +71,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="PHM5002-Tutorial_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="PHM5002-Tutorial_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="PHM5002-Tutorial_files/libs/bootstrap/bootstrap-769b268fb290e116fe386cf5612ac759.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -170,7 +173,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 15, 2025</p>
+      <p class="date">September 17, 2025</p>
     </div>
   </div>
   
@@ -182,9 +185,12 @@ window.Quarto = {
 </header>
 
 
+<div id="cell-1" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">collapse =</span> <span class="cn">TRUE</span>, <span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">message =</span> <span class="cn">TRUE</span>, <span class="at">warning =</span> <span class="cn">FALSE</span>, <span class="at">fig.height=</span><span class="dv">4</span>, <span class="at">fig.width=</span><span class="dv">10</span>, <span class="at">fig.retina=</span><span class="dv">2</span>, <span class="at">comment =</span> <span class="st">"#&gt;"</span>, <span class="at">fig.show =</span> <span class="st">"hold"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
-<p>Welcome to this R-based tutorial on data processing of a targeted plasma lipidomics dataset. We will use the dataset published by <a href="https://www.ahajournals.org/doi/suppl/10.1161/ATVBAHA.121.316847">Tan et al., <em>Arterioscler Thromb Vasc Biol</em>, 2022</a> as an example. In that study, a panel of 413 plasma lipids was quantified by liquid chromatography–tandem mass spectrometry (LC–MS/MS) using multiple reaction monitoring (MRM). We begin with preprocessed LC-MS raw data, i.e., peak-area data that were generated using the MRMkit software (<a href="https://dx.doi.org/10.1021/acs.analchem.0c03060">Teo et al., <em>Anal. Chem.,</em> 2020</a>). See Figure 1 for an overview of the typical data processing flow, of which we will cover aspects of the postprocessing, quality control and reporting.</p>
+<p>Welcome to this R-based tutorial on data processing of a targeted plasma lipidomics dataset. We will use the dataset published by <a href="https://www.ahajournals.org/doi/10.1161/ATVBAHA.121.316847">Tan et al., <em>Arterioscler Thromb Vasc Biol</em>, 2022</a> as an example. In that study, a panel of 413 plasma lipids was quantified by liquid chromatography–tandem mass spectrometry (LC–MS/MS) using multiple reaction monitoring (MRM). We begin with preprocessed LC-MS raw data, i.e., peak-area data that were generated using the MRMkit software (<a href="https://dx.doi.org/10.1021/acs.analchem.0c03060">Teo et al., <em>Anal. Chem.,</em> 2020</a>). See Figure 1 for an overview of the typical data processing flow, of which we will cover aspects of the postprocessing, quality control and reporting.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/workflow.png" class="img-fluid figure-img" width="319"></p>
@@ -208,63 +214,272 @@ Important
 <p>NOTE: It is a good practice to restart R before you run or rerun code to clear all loaded data and variables. This can be done via <em>Session -&gt; Restart R</em> or via SHIFT-ALT-0 (Windows) or SHIFT-⌘-0 (MacOS).</p>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ dplyr     1.1.4     ✔ readr     2.1.5</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ forcats   1.0.0     ✔ stringr   1.5.1</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ ggplot2   3.5.2     ✔ tibble    3.3.0</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ lubridate 1.9.4     ✔ tidyr     1.3.1</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ purrr     1.1.0     </span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✖ dplyr::filter() masks stats::filter()</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✖ dplyr::lag()    masks stats::lag()</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; here() starts at /Users/lsibjb/Documents/Code/PHM5002</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>here<span class="sc">::</span><span class="fu">i_am</span>(<span class="st">"PHM5002-Tutorial.qmd"</span>)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; here() starts at /Users/lsibjb/Documents/Code/PHM5002</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Define point colors and shapes for each qc_type in the plots</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>qc_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">SAMPLE =</span> <span class="st">"grey50"</span>, <span class="at">QC =</span> <span class="st">"red"</span>, <span class="at">BLANK =</span> <span class="st">"#00db7c"</span>, <span class="at">RESP =</span> <span class="st">"blue"</span>)</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>qc_shapes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">SAMPLE =</span> <span class="dv">1</span>, <span class="at">QC =</span> <span class="dv">21</span>, <span class="at">BLANK =</span> <span class="dv">23</span>, <span class="at">RESP =</span> <span class="dv">22</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-4" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>here<span class="sc">::</span><span class="fu">i_am</span>(<span class="st">"PHM5002-Tutorial.qmd"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Define point colors and shapes for each qc_type in the plots</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>qc_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">SAMPLE =</span> <span class="st">"grey50"</span>, <span class="at">QC =</span> <span class="st">"red"</span>, <span class="at">BLANK =</span> <span class="st">"#00db7c"</span>, <span class="at">RESP =</span> <span class="st">"blue"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>qc_shapes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">SAMPLE =</span> <span class="dv">1</span>, <span class="at">QC =</span> <span class="dv">21</span>, <span class="at">BLANK =</span> <span class="dv">23</span>, <span class="at">RESP =</span> <span class="dv">22</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre>── <span class="ansi-bold">Attaching core tidyverse packages</span> ─────────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
+
+<span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">dplyr    </span> 1.1.4     <span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">readr    </span> 2.1.5
+
+<span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">forcats  </span> 1.0.0     <span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">stringr  </span> 1.5.1
+
+<span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">ggplot2  </span> 3.5.2     <span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">tibble   </span> 3.3.0
+
+<span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">lubridate</span> 1.9.4     <span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">tidyr    </span> 1.3.1
+
+<span class="ansi-green-fg">✔</span> <span class="ansi-blue-fg">purrr    </span> 1.1.0     
+
+── <span class="ansi-bold">Conflicts</span> ───────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+
+<span class="ansi-red-fg">✖</span> <span class="ansi-blue-fg">dplyr</span>::<span class="ansi-green-fg">filter()</span> masks <span class="ansi-blue-fg">stats</span>::filter()
+
+<span class="ansi-red-fg">✖</span> <span class="ansi-blue-fg">dplyr</span>::<span class="ansi-green-fg">lag()</span>    masks <span class="ansi-blue-fg">stats</span>::lag()
+
+<span class="ansi-cyan-fg">ℹ</span> Use the conflicted package (<span style="font-style:italic" class="ansi-blue-fg">&lt;http://conflicted.r-lib.org/&gt;</span>) to force all conflicts to become errors
+
+here() starts at /Users/lsibjb/Documents/Code/PHM5002
+
+
+
+here() starts at /Users/lsibjb/Documents/Code/PHM5002
+
+
+</pre>
+</div>
+</div>
 </div>
 </section>
 <section id="importing-raw-data" class="level2">
 <h2 class="anchored" data-anchor-id="importing-raw-data">3. Importing raw data</h2>
 <p>We begin by loading the table containing peak area data. After import, it is important to verify that the data were loaded correctly, completely, and with appropriate column types. Missing values or undefined text entries can cause columns to be interpreted as character rather than numeric data.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>d_orig <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="fu">here</span>(<span class="st">"data/SPERFECT_RawAreas_Tutorial.csv"</span>),</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_names =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">trim_ws =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">na =</span> <span class="fu">c</span>(<span class="st">"NA"</span>, <span class="st">"ND"</span>, <span class="st">"n.d."</span>))</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Rows: 445 Columns: 416</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ── Column specification ────────────────────────────────────────────────────────</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Delimiter: ","</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; chr   (3): filename, batch_id, qc_type</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; dbl (413): CE 14:0, CE 15:0, CE 16:0, CE 16:1, CE 16:2, CE 17:0, CE 17:1, CE...</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Use `spec()` to retrieve the full column specification for this data.</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d_orig)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 416</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   filename    batch_id qc_type `CE 14:0` `CE 15:0` `CE 16:0` `CE 16:1` `CE 16:2`</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 PBLK-1.mzML Longit_1 BLANK        47.3      54.6      440.      143.     0.568</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 RQC-1-10.m… Longit_1 RESP         87.3     262.     23404.     3271.   248.   </span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3 RQC-1-20.m… Longit_1 RESP        210.      530.     37327.     4811.   226.   </span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4 RQC-1-40.m… Longit_1 RESP        335.      186.     52478.     4923.   307.   </span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5 RQC-1-60.m… Longit_1 RESP        189.      239.     66109.     5774.   417.   </span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6 RQC-1-80.m… Longit_1 RESP        592.      230.     75214.     6100.   256.   </span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ 408 more variables: `CE 17:0` &lt;dbl&gt;, `CE 17:1` &lt;dbl&gt;, `CE 18:0` &lt;dbl&gt;,</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   `CE 18:1` &lt;dbl&gt;, `CE 18:1 d7 (ISTD)` &lt;dbl&gt;, `CE 18:2` &lt;dbl&gt;,</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   `CE 18:3` &lt;dbl&gt;, `CE 20:1` &lt;dbl&gt;, `CE 20:2` &lt;dbl&gt;, `CE 20:3` &lt;dbl&gt;,</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   `CE 20:4` &lt;dbl&gt;, `CE 20:5` &lt;dbl&gt;, `CE 22:0` &lt;dbl&gt;, `CE 22:1` &lt;dbl&gt;,</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   `CE 22:4` &lt;dbl&gt;, `CE 22:5` &lt;dbl&gt;, `CE 22:6` &lt;dbl&gt;, `CE 24:0` &lt;dbl&gt;,</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   `CE 24:1` &lt;dbl&gt;, `CE 24:4` &lt;dbl&gt;, `CE 24:5` &lt;dbl&gt;, `CE 24:6` &lt;dbl&gt;,</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   `Cer d18:0/16:0` &lt;dbl&gt;, `Cer d18:0/18:0` &lt;dbl&gt;, `Cer d18:0/20:0` &lt;dbl&gt;, …</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>d_orig <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="fu">here</span>(<span class="st">"data/SPERFECT_RawAreas_Tutorial.csv"</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_names =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">trim_ws =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">na =</span> <span class="fu">c</span>(<span class="st">"NA"</span>, <span class="st">"ND"</span>, <span class="st">"n.d."</span>))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d_orig)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-bold">Rows: </span><span class="ansi-blue-fg">445</span> <span class="ansi-bold">Columns: </span><span class="ansi-blue-fg">416</span>
+
+<span class="ansi-cyan-fg">──</span> <span class="ansi-bold">Column specification</span> <span class="ansi-cyan-fg">───────────────────────────────────────────────────────────────────────────────────────────────</span>
+
+<span class="ansi-bold">Delimiter:</span> ","
+
+<span class="ansi-red-fg">chr</span>   (3): filename, batch_id, qc_type
+
+<span class="ansi-green-fg">dbl</span> (413): CE 14:0, CE 15:0, CE 16:0, CE 16:1, CE 16:2, CE 17:0, CE 17:1, CE...
+
+
+
+<span class="ansi-cyan-fg">ℹ</span> Use `spec()` to retrieve the full column specification for this data.
+
+<span class="ansi-cyan-fg">ℹ</span> Specify the column types or set `show_col_types = FALSE` to quiet this message.
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A tibble: 6 × 416</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">filename</th>
+<th data-quarto-table-cell-role="th" scope="col">batch_id</th>
+<th data-quarto-table-cell-role="th" scope="col">qc_type</th>
+<th data-quarto-table-cell-role="th" scope="col">CE 14:0</th>
+<th data-quarto-table-cell-role="th" scope="col">CE 15:0</th>
+<th data-quarto-table-cell-role="th" scope="col">CE 16:0</th>
+<th data-quarto-table-cell-role="th" scope="col">CE 16:1</th>
+<th data-quarto-table-cell-role="th" scope="col">CE 16:2</th>
+<th data-quarto-table-cell-role="th" scope="col">CE 17:0</th>
+<th data-quarto-table-cell-role="th" scope="col">CE 17:1</th>
+<th data-quarto-table-cell-role="th" scope="col">⋯</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 54:5 [-18:1]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 54:5 [SIM]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 54:6 [-18:2]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 54:6 [SIM]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 56:6 [-20:4]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 56:6 [SIM]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 56:8 [-20:4]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 56:8 [SIM]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 58:8 [-22:6]</th>
+<th data-quarto-table-cell-role="th" scope="col">TG 58:8 [SIM]</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">⋯</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PBLK-1.mzML</td>
+<td>Longit_1</td>
+<td>BLANK</td>
+<td>47.33668</td>
+<td>54.56039</td>
+<td>440.0968</td>
+<td>143.0343</td>
+<td>0.5681131</td>
+<td>19.40112</td>
+<td>96.85926</td>
+<td>⋯</td>
+<td>8273.105</td>
+<td>201962.4</td>
+<td>5808.207</td>
+<td>20293.35</td>
+<td>290.864</td>
+<td>49109.9</td>
+<td>35.01584</td>
+<td>8720.705</td>
+<td>213.0995</td>
+<td>2249.682</td>
+</tr>
+<tr class="even">
+<td>RQC-1-10.mzML</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>87.33454</td>
+<td>261.53584</td>
+<td>23403.8998</td>
+<td>3270.6534</td>
+<td>248.0368257</td>
+<td>389.76839</td>
+<td>518.20070</td>
+<td>⋯</td>
+<td>373829.748</td>
+<td>2534052.1</td>
+<td>93339.281</td>
+<td>941357.33</td>
+<td>69638.046</td>
+<td>1480249.6</td>
+<td>9985.41028</td>
+<td>250356.573</td>
+<td>15229.3103</td>
+<td>134253.815</td>
+</tr>
+<tr class="odd">
+<td>RQC-1-20.mzML</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>209.87036</td>
+<td>530.44076</td>
+<td>37327.1658</td>
+<td>4810.9088</td>
+<td>226.1989196</td>
+<td>1212.11771</td>
+<td>1450.79610</td>
+<td>⋯</td>
+<td>672990.110</td>
+<td>5390233.7</td>
+<td>218274.112</td>
+<td>2246087.24</td>
+<td>147754.422</td>
+<td>2052751.2</td>
+<td>23144.64829</td>
+<td>686224.021</td>
+<td>37198.1048</td>
+<td>257961.551</td>
+</tr>
+<tr class="even">
+<td>RQC-1-40.mzML</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>335.09201</td>
+<td>186.37977</td>
+<td>52478.4768</td>
+<td>4923.1994</td>
+<td>307.3759717</td>
+<td>1133.24989</td>
+<td>947.66596</td>
+<td>⋯</td>
+<td>1212039.112</td>
+<td>8193359.5</td>
+<td>347357.885</td>
+<td>3131958.55</td>
+<td>230409.021</td>
+<td>2790798.1</td>
+<td>39653.88664</td>
+<td>1086392.043</td>
+<td>63722.4765</td>
+<td>503483.224</td>
+</tr>
+<tr class="odd">
+<td>RQC-1-60.mzML</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>188.84420</td>
+<td>239.20994</td>
+<td>66109.3650</td>
+<td>5773.6374</td>
+<td>416.7962786</td>
+<td>1459.16631</td>
+<td>1122.55653</td>
+<td>⋯</td>
+<td>1539370.900</td>
+<td>11346953.8</td>
+<td>570166.970</td>
+<td>4491704.46</td>
+<td>287020.003</td>
+<td>4112225.6</td>
+<td>56616.51697</td>
+<td>1315912.982</td>
+<td>81560.8181</td>
+<td>596156.877</td>
+</tr>
+<tr class="even">
+<td>RQC-1-80.mzML</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>591.90719</td>
+<td>230.05679</td>
+<td>75214.4665</td>
+<td>6100.4509</td>
+<td>256.2172797</td>
+<td>1852.43953</td>
+<td>803.07129</td>
+<td>⋯</td>
+<td>2073486.183</td>
+<td>15600101.5</td>
+<td>627310.867</td>
+<td>5677476.78</td>
+<td>360325.219</td>
+<td>4660248.1</td>
+<td>63213.91273</td>
+<td>1673236.053</td>
+<td>100971.5542</td>
+<td>738767.093</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 <section id="preparing-the-data-data-wrangling" class="level2">
@@ -276,30 +491,94 @@ Important
 <figcaption><strong>Figure 2</strong>: Comparison of Wide vs.&nbsp;Long-Format Tables. The column shown in red is an additional feature variable not available in the wide table.</figcaption>
 </figure>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>d_orig <span class="ot">&lt;-</span> d_orig <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">filename =</span> stringr<span class="sc">::</span><span class="fu">str_replace</span>(filename, <span class="st">".mzML"</span>, <span class="st">""</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">run_no =</span> <span class="fu">row_number</span>(), <span class="at">.before =</span> <span class="dv">1</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>d_full <span class="ot">&lt;-</span> d_orig <span class="sc">|&gt;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"lipid"</span>, </span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"area"</span>,</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="sc">-</span>run_no<span class="sc">:-</span>qc_type</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(lipid) <span class="sc">|&gt;</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">sample_id =</span> filename)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d_full)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 6</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   run_no sample_id batch_id qc_type lipid    area</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;   &lt;dbl&gt;</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1      1 PBLK-1    Longit_1 BLANK   CE 14:0  47.3</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2      2 RQC-1-10  Longit_1 RESP    CE 14:0  87.3</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3      3 RQC-1-20  Longit_1 RESP    CE 14:0 210. </span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4      4 RQC-1-40  Longit_1 RESP    CE 14:0 335. </span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5      5 RQC-1-60  Longit_1 RESP    CE 14:0 189. </span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6      6 RQC-1-80  Longit_1 RESP    CE 14:0 592.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-data-wrangling" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>d_orig <span class="ot">&lt;-</span> d_orig <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">filename =</span> stringr<span class="sc">::</span><span class="fu">str_replace</span>(filename, <span class="st">".mzML"</span>, <span class="st">""</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">run_no =</span> <span class="fu">row_number</span>(), <span class="at">.before =</span> <span class="dv">1</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>d_full <span class="ot">&lt;-</span> d_orig <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"lipid"</span>, </span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"area"</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="sc">-</span>run_no<span class="sc">:-</span>qc_type</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(lipid) <span class="sc">|&gt;</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">sample_id =</span> filename)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d_full)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="data-wrangling" class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A tibble: 6 × 6</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">run_no</th>
+<th data-quarto-table-cell-role="th" scope="col">sample_id</th>
+<th data-quarto-table-cell-role="th" scope="col">batch_id</th>
+<th data-quarto-table-cell-role="th" scope="col">qc_type</th>
+<th data-quarto-table-cell-role="th" scope="col">lipid</th>
+<th data-quarto-table-cell-role="th" scope="col">area</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;int&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>PBLK-1</td>
+<td>Longit_1</td>
+<td>BLANK</td>
+<td>CE 14:0</td>
+<td>47.33668</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>RQC-1-10</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>CE 14:0</td>
+<td>87.33454</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>RQC-1-20</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>CE 14:0</td>
+<td>209.87036</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>RQC-1-40</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>CE 14:0</td>
+<td>335.09201</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>RQC-1-60</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>CE 14:0</td>
+<td>188.84420</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>RQC-1-80</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>CE 14:0</td>
+<td>591.90719</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 <section id="example-workflow" class="level1">
@@ -308,19 +587,83 @@ Important
 <h2 class="anchored" data-anchor-id="subset-the-data">5. Subset the data</h2>
 <p>We will focus on a selected subset of the measured analytes in this first part of the tutorial for illustrative purposes. For this, few measured triacylglycerol (TG) species and the corresponding internal standard will be selected. The code to process the full dataset can be found at the end of this tutorial (Section 15).</p>
 <p>We subset the measured lipid species using <em>regular expressions</em> and include the TG internal standard as well. You can modify the code below to select other lipid species.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>d_subset <span class="ot">&lt;-</span> d_full <span class="sc">|&gt;</span> </span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(lipid, <span class="st">"^TG 5[2-9]:[2-8] </span><span class="sc">\\</span><span class="st">[</span><span class="sc">\\</span><span class="st">-"</span>) <span class="sc">|</span> lipid <span class="sc">==</span> <span class="st">"TG 48:1 d7 [-15:0] (ISTD)"</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d_subset)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 6 × 6</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   run_no sample_id batch_id qc_type lipid                         area</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;    &lt;chr&gt;   &lt;chr&gt;                        &lt;dbl&gt;</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1      1 PBLK-1    Longit_1 BLANK   TG 48:1 d7 [-15:0] (ISTD) 2190563.</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2      2 RQC-1-10  Longit_1 RESP    TG 48:1 d7 [-15:0] (ISTD)  274380.</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3      3 RQC-1-20  Longit_1 RESP    TG 48:1 d7 [-15:0] (ISTD)  585267.</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4      4 RQC-1-40  Longit_1 RESP    TG 48:1 d7 [-15:0] (ISTD) 1018345.</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5      5 RQC-1-60  Longit_1 RESP    TG 48:1 d7 [-15:0] (ISTD) 1236618.</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6      6 RQC-1-80  Longit_1 RESP    TG 48:1 d7 [-15:0] (ISTD) 1663751.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="cell-subset-data" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>d_subset <span class="ot">&lt;-</span> d_full <span class="sc">|&gt;</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(lipid, <span class="st">"^TG 5[2-9]:[2-8] </span><span class="sc">\\</span><span class="st">[</span><span class="sc">\\</span><span class="st">-"</span>) <span class="sc">|</span> lipid <span class="sc">==</span> <span class="st">"TG 48:1 d7 [-15:0] (ISTD)"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d_subset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="subset-data" class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A tibble: 6 × 6</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">run_no</th>
+<th data-quarto-table-cell-role="th" scope="col">sample_id</th>
+<th data-quarto-table-cell-role="th" scope="col">batch_id</th>
+<th data-quarto-table-cell-role="th" scope="col">qc_type</th>
+<th data-quarto-table-cell-role="th" scope="col">lipid</th>
+<th data-quarto-table-cell-role="th" scope="col">area</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;int&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>PBLK-1</td>
+<td>Longit_1</td>
+<td>BLANK</td>
+<td>TG 48:1 d7 [-15:0] (ISTD)</td>
+<td>2190562.5</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>RQC-1-10</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>TG 48:1 d7 [-15:0] (ISTD)</td>
+<td>274380.5</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>RQC-1-20</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>TG 48:1 d7 [-15:0] (ISTD)</td>
+<td>585267.3</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>RQC-1-40</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>TG 48:1 d7 [-15:0] (ISTD)</td>
+<td>1018344.5</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>RQC-1-60</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>TG 48:1 d7 [-15:0] (ISTD)</td>
+<td>1236618.1</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>RQC-1-80</td>
+<td>Longit_1</td>
+<td>RESP</td>
+<td>TG 48:1 d7 [-15:0] (ISTD)</td>
+<td>1663751.4</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 <section id="a-first-look-into-the-data" class="level2">
@@ -331,28 +674,28 @@ Important
 <li>BLANK (Blanks): Samples without matrix (plasma) to determine background signals</li>
 <li>RESP (Response QCs): To check for linear response</li>
 </ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(d_subset, <span class="fu">aes</span>(<span class="at">x =</span> run_no, <span class="at">y =</span> area)) <span class="sc">+</span> </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> qc_type, </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">fill =</span> qc_type, </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">shape  =</span> qc_type),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">size =</span> <span class="dv">1</span>, </span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>               <span class="at">alpha =</span><span class="fl">0.7</span>, </span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>               <span class="at">stroke =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(lipid), </span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>               <span class="at">ncol =</span> <span class="dv">4</span>, </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>               <span class="at">nrow =</span> <span class="dv">4</span>, </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">scales=</span><span class="st">"free_y"</span>) <span class="sc">+</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_shape_manual</span>(<span class="at">na.value =</span> <span class="cn">NA</span>, <span class="at">values =</span> qc_shapes) <span class="sc">+</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> qc_colors, <span class="at">na.value =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> qc_colors, <span class="at">na.value =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fu">max</span>(d_subset<span class="sc">$</span>run_no), <span class="at">by =</span> <span class="dv">100</span> )) <span class="sc">+</span> </span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="cn">NA</span>)) <span class="sc">+</span> </span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">8</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
+<div id="cell-plot-runscatter-areas" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(d_subset, <span class="fu">aes</span>(<span class="at">x =</span> run_no, <span class="at">y =</span> area)) <span class="sc">+</span> </span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> qc_type, </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">fill =</span> qc_type, </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">shape  =</span> qc_type),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">size =</span> <span class="dv">1</span>, </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">alpha =</span><span class="fl">0.7</span>, </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">stroke =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(lipid), </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">ncol =</span> <span class="dv">4</span>, </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">nrow =</span> <span class="dv">4</span>, </span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">scales=</span><span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">na.value =</span> <span class="cn">NA</span>, <span class="at">values =</span> qc_shapes) <span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> qc_colors, <span class="at">na.value =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> qc_colors, <span class="at">na.value =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fu">max</span>(d_subset<span class="sc">$</span>run_no), <span class="at">by =</span> <span class="dv">100</span> )) <span class="sc">+</span> </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="cn">NA</span>)) <span class="sc">+</span> </span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">8</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="PHM5002-Tutorial_files/figure-html/plot-runscatter-areas-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="PHM5002-Tutorial_files/figure-html/plot-runscatter-areas-output-1.png" id="plot-runscatter-areas" width="420" height="420" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -363,47 +706,12 @@ Important
 <section id="assessing-linearity-of-measurements" class="level2">
 <h2 class="anchored" data-anchor-id="assessing-linearity-of-measurements">7. Assessing Linearity of Measurements</h2>
 <p>Analyzed sample amounts need to be carefully chosen when measuring analytes covering a large concentration range. It is a trade-off between sensitivity and not exceeding the linear range of the measurement. Below we plot the response curves and fit linear regression lines to the data. We observe an overall good linearity for most species.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract sample details from the sample name</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>d_rqc <span class="ot">&lt;-</span> d_subset <span class="sc">|&gt;</span> </span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(qc_type <span class="sc">==</span> <span class="st">"RESP"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(<span class="at">col =</span> sample_id, </span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>           <span class="at">into =</span> <span class="fu">c</span>(<span class="st">"type"</span>,<span class="st">"curve_no"</span>,<span class="st">"amount"</span>), </span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>           <span class="at">sep =</span> <span class="st">"-"</span>, </span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>           <span class="at">remove =</span> <span class="cn">FALSE</span>, <span class="at">convert =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>d_rqc<span class="sc">$</span>amount <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(d_rqc<span class="sc">$</span>amount)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># plot </span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(d_rqc, <span class="fu">aes</span>(<span class="at">x =</span> amount, <span class="at">y =</span> area)) <span class="sc">+</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span><span class="fl">0.7</span>, <span class="at">stroke =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(lipid), <span class="at">ncol =</span> <span class="dv">5</span>, <span class="at">nrow =</span> <span class="dv">4</span>, <span class="at">scales=</span><span class="st">"free_y"</span>) <span class="sc">+</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    ggpmisc<span class="sc">::</span><span class="fu">stat_poly_line</span>(<span class="at">linewidth =</span> <span class="fl">0.5</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    ggpmisc<span class="sc">::</span><span class="fu">stat_poly_eq</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">after_stat</span>(rr.label)),</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>                  <span class="at">size =</span> <span class="fl">2.4</span>,</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>                  <span class="at">lineheight =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="cn">NA</span>)) <span class="sc">+</span> </span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="cn">NA</span>)) <span class="sc">+</span> </span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Rel. Sample Amount (%)"</span>) <span class="sc">+</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">8</span>)</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Registered S3 methods overwritten by 'ggpp':</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   method                  from   </span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   heightDetails.titleGrob ggplot2</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   widthDetails.titleGrob  ggplot2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="PHM5002-Tutorial_files/figure-html/plot-response-1.png" class="img-fluid figure-img" width="960"></p>
-</figure>
-</div>
-</div>
-</div>
 </section>
 <section id="normalization-and-quantification" class="level2">
 <h2 class="anchored" data-anchor-id="normalization-and-quantification">8. Normalization and Quantification</h2>
 <p>To reduce technical variability and convert peak areas to concentrations, we will use internal-standard (ISTD) normalization. Internal standards are compounds with similar chemical/physicochemical properties to the analytes, but are distinguishable in the used assay. Suitable ISTDs include isotope‑labelled versions of the analytes or structurally similar compounds not present in the sample matrix.</p>
 <p>Below we iterate over each sample and divide the peak area of each lipid species by the peak area of the corresponding TG class‑specific ISTD in the sample. The normalized areas are stored in a new column <code>norm_area</code>.</p>
-<div class="cell">
+<div id="normalize-areas" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>d_subset <span class="ot">&lt;-</span> d_subset <span class="sc">|&gt;</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sample_id) <span class="sc">|&gt;</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
@@ -416,7 +724,7 @@ Important
 \]</span></p>
 <p><span class="math inline">\(Lipid_i\)</span> is the peak area of a lipid species, <span class="math inline">\(ISTD_{class}\)</span> is the peak area of the class-specific ISTD used for normalization, <span class="math inline">\(ISTD_{vol}\)</span> is the volume of ISTD solution spiked into the sample, <span class="math inline">\([ISTD_{class}]\)</span> is the concentration of ISTD in the mix, and <span class="math inline">\(Sample_{amount}\)</span> is the amount (volume) of sample extracted.</p>
 <p>In our case, 4.5 µL of ISTD solution was spiked into 10 µL plasma, and the concentration of the TG ISTD in the spike-in solution is 70.53 µmol/L. We hence calculate the concentrations as shown below, with the calculated concentrations being stored in the new column <code>concentration</code>. The concentration unit is µmol/L.</p>
-<div class="cell">
+<div id="calculate-concentration" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>d_subset <span class="ot">&lt;-</span> d_subset <span class="sc">|&gt;</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sample_id) <span class="sc">|&gt;</span></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
@@ -427,7 +735,7 @@ Important
 <section id="inspecting-the-normalized-data" class="level2">
 <h2 class="anchored" data-anchor-id="inspecting-the-normalized-data">9. Inspecting the Normalized Data</h2>
 <p>Normalization with a class-specific ISTD can reduce variability that resulted from sample processing and the LC–MS analysis, but it may also introduce noise or artifacts. Let’s examine how the data look after normalization.</p>
-<div class="cell">
+<div id="cell-plot-runscatter-function" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>plot_runscatter <span class="ot">&lt;-</span> <span class="cf">function</span>(data, variable){</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(qc_type, <span class="st">"BLANK|RQC"</span>))</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> run_no, <span class="at">y =</span> {{variable}})) <span class="sc">+</span> </span>
@@ -448,10 +756,10 @@ Important
 <span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_runscatter</span>(d_subset, concentration)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
+<div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="PHM5002-Tutorial_files/figure-html/plot-runscatter-fun-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="PHM5002-Tutorial_files/figure-html/plot-runscatter-function-output-1.png" id="plot-runscatter-function" width="420" height="420" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -461,7 +769,7 @@ Important
 <h2 class="anchored" data-anchor-id="drift-and-batch-correction">10. Drift and Batch Correction</h2>
 <p>Some drifts are still present in the data. We will attempt to correct these drifts and batch effects, assuming that the QCs reflect the same drift and batch effects affecting the study samples. First, we apply within-batch <code>loess</code> smoothing.</p>
 <p><strong>Note</strong>: In the publication another algorithm was used, which was based on the all data points rather than just QCs.</p>
-<div class="cell">
+<div id="drift-correction" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>d_subset<span class="sc">$</span>y_predicted <span class="ot">&lt;-</span> <span class="cn">NULL</span>   <span class="co"># clean up in case chunk is rerun</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a robust loess-based smoothing function</span></span>
@@ -494,19 +802,27 @@ Important
 <span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">conc_adj =</span> <span class="dv">2</span><span class="sc">^</span>(conc_log <span class="sc">-</span> y_predicted)) <span class="sc">|&gt;</span> </span>
 <span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Let’s have a look how the data looks after drift correction.</p>
-<div class="cell">
+<p>Let’s have a look how the data looks after drift correction:</p>
+<div id="cell-plot-runscatter-conc" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_runscatter</span>(d_subset, conc_adj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre>Warning message:
+
+“Removed 96 rows containing missing values or values outside the scale range (`geom_point()`).”
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="PHM5002-Tutorial_files/figure-html/plot-runscatter-conc-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="PHM5002-Tutorial_files/figure-html/plot-runscatter-conc-output-2.png" id="plot-runscatter-conc" width="420" height="420" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Next, we apply QC-based median-centering to correct batch effects and plot the data again.</p>
-<div class="cell">
+<p>Next, we apply QC-based median-centering to correct batch effects and plot the data again:</p>
+<div id="cell-batch-correction" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Between-batch correction via QC-based median centering</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>d_subset <span class="ot">&lt;-</span> d_subset <span class="sc">|&gt;</span> </span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(lipid,  batch_id) <span class="sc">|&gt;</span> </span>
@@ -524,10 +840,18 @@ Important
 <span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a> <span class="fu">ungroup</span>()</span>
 <span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_runscatter</span>(d_subset, conc_adj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
+<div class="cell-output cell-output-stderr">
+<div class="ansi-escaped-output">
+<pre>Warning message:
+
+“Removed 96 rows containing missing values or values outside the scale range (`geom_point()`).”
+</pre>
+</div>
+</div>
+<div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="PHM5002-Tutorial_files/figure-html/batch-correction-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="PHM5002-Tutorial_files/figure-html/batch-correction-output-2.png" id="batch-correction" width="420" height="420" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -537,7 +861,7 @@ Important
 <section id="calculate-quality-control-qc-metrics" class="level2">
 <h2 class="anchored" data-anchor-id="calculate-quality-control-qc-metrics">11. Calculate Quality Control (QC) Metrics</h2>
 <p>To evaluate the analysis quality and filter the data, we calculate QC metrics for each lipid species. These include the analytical coefficient of variation (%CV) based on the QCs and the signal-to-blank ratio.</p>
-<div class="cell">
+<div id="cell-qc-metrics" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>cv <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">sd</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)<span class="sc">/</span><span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>d_qc <span class="ot">&lt;-</span> d_subset <span class="sc">|&gt;</span> </span>
@@ -550,28 +874,144 @@ Important
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_conc =</span> <span class="fu">mean</span>(conc_adj[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  d_qc</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 16 × 5</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    lipid                   signal_blank_ratio cv_qc_area cv_qc_concadj mean_conc</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;                                &lt;dbl&gt;      &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1 TG 48:1 d7 [-15:0] (IS…              0.469       9.21      1.76e-13     31.7 </span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2 TG 52:2 [-16:0]                    103.          7.23      5.94e+ 0    586.  </span></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3 TG 52:3 [-16:1]                     54.1         6.91      5.70e+ 0     38.9 </span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4 TG 52:3 [-18:2]                    184.          7.98      7.66e+ 0    395.  </span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5 TG 52:4 [-16:0]                    302.          7.20      6.81e+ 0    158.  </span></span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6 TG 52:4 [-18:1]                    285.          6.29      6.10e+ 0     73.2 </span></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7 TG 53:2 [-17:0]                     65.5        10.6       7.34e+ 0      8.61</span></span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 TG 54:2 [-18:0]                     55.1         8.94      8.09e+ 0     72.5 </span></span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 TG 54:3 [-18:1]                     51.7         8.91      6.60e+ 0    242.  </span></span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 TG 54:4 [-18:0]                     62.8         7.20      5.19e+ 0     11.3 </span></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11 TG 54:4 [-18:2]                     73.3         7.31      6.22e+ 0     21.4 </span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12 TG 54:5 [-18:1]                    123.          6.39      6.10e+ 0     56.7 </span></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13 TG 54:6 [-18:2]                    115.         13.2       8.76e+ 0     30.1 </span></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14 TG 56:6 [-20:4]                    364.          6.61      6.91e+ 0     10.6 </span></span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15 TG 56:8 [-20:4]                   1011.         13.0       7.86e+ 0      3.94</span></span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16 TG 58:8 [-22:6]                    488.          6.18      5.82e+ 0      8.79</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  d_qc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="qc-metrics" class="cell-output cell-output-display">
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>A tibble: 16 × 5</caption>
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th" scope="col">lipid</th>
+<th data-quarto-table-cell-role="th" scope="col">signal_blank_ratio</th>
+<th data-quarto-table-cell-role="th" scope="col">cv_qc_area</th>
+<th data-quarto-table-cell-role="th" scope="col">cv_qc_concadj</th>
+<th data-quarto-table-cell-role="th" scope="col">mean_conc</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th" scope="col">&lt;chr&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+<th data-quarto-table-cell-role="th" scope="col">&lt;dbl&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>TG 48:1 d7 [-15:0] (ISTD)</td>
+<td>0.4692592</td>
+<td>9.211315</td>
+<td>1.762602e-13</td>
+<td>31.738500</td>
+</tr>
+<tr class="even">
+<td>TG 52:2 [-16:0]</td>
+<td>103.0617088</td>
+<td>7.229633</td>
+<td>5.938931e+00</td>
+<td>585.605007</td>
+</tr>
+<tr class="odd">
+<td>TG 52:3 [-16:1]</td>
+<td>54.0521323</td>
+<td>6.914775</td>
+<td>5.698375e+00</td>
+<td>38.883131</td>
+</tr>
+<tr class="even">
+<td>TG 52:3 [-18:2]</td>
+<td>184.2649858</td>
+<td>7.981766</td>
+<td>7.663653e+00</td>
+<td>395.203906</td>
+</tr>
+<tr class="odd">
+<td>TG 52:4 [-16:0]</td>
+<td>301.7547458</td>
+<td>7.199320</td>
+<td>6.814628e+00</td>
+<td>157.915959</td>
+</tr>
+<tr class="even">
+<td>TG 52:4 [-18:1]</td>
+<td>285.0684618</td>
+<td>6.286556</td>
+<td>6.096620e+00</td>
+<td>73.183703</td>
+</tr>
+<tr class="odd">
+<td>TG 53:2 [-17:0]</td>
+<td>65.5161064</td>
+<td>10.566126</td>
+<td>7.340353e+00</td>
+<td>8.610932</td>
+</tr>
+<tr class="even">
+<td>TG 54:2 [-18:0]</td>
+<td>55.0606407</td>
+<td>8.944523</td>
+<td>8.087281e+00</td>
+<td>72.528402</td>
+</tr>
+<tr class="odd">
+<td>TG 54:3 [-18:1]</td>
+<td>51.6824685</td>
+<td>8.909448</td>
+<td>6.596849e+00</td>
+<td>242.432288</td>
+</tr>
+<tr class="even">
+<td>TG 54:4 [-18:0]</td>
+<td>62.7842849</td>
+<td>7.198567</td>
+<td>5.189386e+00</td>
+<td>11.261662</td>
+</tr>
+<tr class="odd">
+<td>TG 54:4 [-18:2]</td>
+<td>73.2910611</td>
+<td>7.305227</td>
+<td>6.222268e+00</td>
+<td>21.374081</td>
+</tr>
+<tr class="even">
+<td>TG 54:5 [-18:1]</td>
+<td>123.0689947</td>
+<td>6.393832</td>
+<td>6.099627e+00</td>
+<td>56.723106</td>
+</tr>
+<tr class="odd">
+<td>TG 54:6 [-18:2]</td>
+<td>115.2129621</td>
+<td>13.178465</td>
+<td>8.756041e+00</td>
+<td>30.106277</td>
+</tr>
+<tr class="even">
+<td>TG 56:6 [-20:4]</td>
+<td>363.5044392</td>
+<td>6.611241</td>
+<td>6.914840e+00</td>
+<td>10.646998</td>
+</tr>
+<tr class="odd">
+<td>TG 56:8 [-20:4]</td>
+<td>1011.4477135</td>
+<td>12.963647</td>
+<td>7.861365e+00</td>
+<td>3.938585</td>
+</tr>
+<tr class="even">
+<td>TG 58:8 [-22:6]</td>
+<td>488.3819518</td>
+<td>6.177163</td>
+<td>5.823309e+00</td>
+<td>8.790630</td>
+</tr>
+</tbody>
+</table>
 </div>
-<p>| What do you observe? How do the %CVs compare with clinical diagnostics–grade TG assays?</p>
+</div>
+<div class="line-block">What do you observe? How do the %CVs compare with clinical diagnostics–grade TG assays?</div>
 </section>
 <section id="feature-filtering" class="level2">
 <h2 class="anchored" data-anchor-id="feature-filtering">12. Feature Filtering</h2>
@@ -581,8 +1021,8 @@ Important
 <section id="principal-component-analysis-pca" class="level2">
 <h2 class="anchored" data-anchor-id="principal-component-analysis-pca">13. Principal Component Analysis (PCA)</h2>
 <p>As a final step, we generate a PCA plot from the concentration data to assess overall structure and detect any clear outliers that may need to be investigated.</p>
-<p>| What do you observe? What patterns would you expect to see?</p>
-<div class="cell">
+<div class="line-block">What do you observe? What patterns would you expect to see?</div>
+<div id="cell-pca" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>plot_pca <span class="ot">&lt;-</span> <span class="cf">function</span>(data, variable) {</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  d_pca <span class="ot">&lt;-</span> data  <span class="sc">|&gt;</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(qc_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"QC"</span>, <span class="st">"SAMPLE"</span>), <span class="sc">!</span><span class="fu">str_detect</span>(lipid, <span class="st">"ISTD"</span>)) <span class="sc">|&gt;</span></span>
@@ -644,10 +1084,10 @@ Important
 <span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(d_subset, conc_adj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
+<div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="PHM5002-Tutorial_files/figure-html/pca-qc-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="PHM5002-Tutorial_files/figure-html/pca-output-1.png" id="pca" width="420" height="420" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -656,13 +1096,13 @@ Important
 <section id="exclusion-of-an-outlier-sample" class="level2">
 <h2 class="anchored" data-anchor-id="exclusion-of-an-outlier-sample">14. Exclusion of an Outlier Sample</h2>
 <p>We identified a potential outlier in the PCA. After a detailed review, we determined that this outlier resulted from a technical error during sample extraction. Therefore, we excluded this sample from the dataset and re-plotted the PCA to confirm its removal and inspect the updated data structure.</p>
-<div class="cell">
+<div id="cell-remove-outlier" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>d_subset_filt <span class="ot">&lt;-</span> d_subset <span class="sc">|&gt;</span> <span class="fu">filter</span>(sample_id <span class="sc">!=</span> <span class="st">"LT_batch6_51"</span>)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(d_subset_filt, conc_adj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
+<div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="PHM5002-Tutorial_files/figure-html/remove-outlier-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="PHM5002-Tutorial_files/figure-html/remove-outlier-output-1.png" id="remove-outlier" width="420" height="420" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -671,7 +1111,7 @@ Important
 <section id="saving-the-final-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="saving-the-final-dataset">15. Saving the Final Dataset</h2>
 <p>We now export the final, drift/batch-corrected concentration data as a wide CSV table, ready for downstream analysis.</p>
-<div class="cell">
+<div id="export-results" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>d_final <span class="ot">&lt;-</span> d_subset_filt <span class="sc">|&gt;</span> </span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>, <span class="sc">!</span><span class="fu">str_detect</span>(lipid, <span class="st">"ISTD"</span>)) <span class="sc">|&gt;</span> </span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> <span class="fu">c</span>(sample_id, qc_type), <span class="at">names_from =</span> <span class="st">"lipid"</span>, <span class="at">values_from =</span> <span class="st">"conc_adj"</span>) </span>
@@ -692,7 +1132,7 @@ Important
 <figcaption><strong>Figure 3:</strong> Joining of mapped ISTD and ISTD concentrations</figcaption>
 </figure>
 </div>
-<div class="cell">
+<div id="calc-full-data" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>d_istd_map <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="fu">here</span>(<span class="st">"data/ISTD_mapping.csv"</span>),</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_names =</span> <span class="cn">TRUE</span>, <span class="at">trim_ws =</span> <span class="cn">TRUE</span>, <span class="at">col_types =</span> <span class="st">"c"</span>)</span>
@@ -746,103 +1186,107 @@ Important
 <section id="inspecting-normalized-data-full-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="inspecting-normalized-data-full-dataset">17. Inspecting Normalized Data (Full Dataset)</h2>
 <p>As in Section 9, we plot the data as scatter plots. Because the full dataset includes many lipid species, we export a multi-page PDF containing plots for all lipids. We first define a reusable plotting function, then generate PDFs for both raw peak areas and final concentrations.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>runscatter <span class="ot">&lt;-</span> <span class="cf">function</span>(data, var){</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(qc_type, <span class="st">"BLANK|RQC"</span>))</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  plot_page <span class="ot">&lt;-</span> <span class="cf">function</span>(data, nrows, ncols){</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x=</span>run_no, <span class="at">y=</span>{{var}})) <span class="sc">+</span> </span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>          <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> qc_type, <span class="at">fill =</span> qc_type, <span class="at">shape  =</span> qc_type),</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">size =</span> <span class="dv">1</span>, <span class="at">alpha =</span><span class="fl">0.7</span>, <span class="at">stroke =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(lipid), <span class="at">ncol =</span> ncols, <span class="at">nrow =</span> nrows, <span class="at">scales=</span><span class="st">"free_y"</span>) <span class="sc">+</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>          <span class="fu">geom_smooth</span>(<span class="at">data=</span> <span class="fu">subset</span>(data, qc_type<span class="sc">==</span><span class="st">"BQC"</span>), <span class="fu">aes</span>(<span class="at">x=</span>run_no, <span class="at">y=</span>{{var}}), </span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">span =</span> <span class="fl">0.75</span>, <span class="at">formula =</span> y <span class="sc">~</span> x, <span class="at">se =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>                      <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">color =</span> <span class="st">"brown3"</span>, <span class="at">linewidth =</span> .<span class="dv">7</span>)<span class="sc">+</span></span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_shape_manual</span>(<span class="at">na.value =</span> <span class="cn">NA</span>, <span class="at">values =</span> qc_shapes) <span class="sc">+</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> qc_colors, <span class="at">na.value =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> qc_colors, <span class="at">na.value =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fu">max</span>(d_full<span class="sc">$</span>run_no), <span class="at">by =</span> <span class="dv">100</span> )) <span class="sc">+</span> </span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="cn">NA</span>)) <span class="sc">+</span> </span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>          <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">8</span>) </span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>   }</span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>  rows_page <span class="ot">=</span> <span class="dv">5</span></span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>  columns_page <span class="ot">=</span> <span class="dv">5</span></span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>  <span class="co">#get a table with page numbers for each lipid species</span></span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>  d_pages <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span> <span class="fu">select</span>(lipid) <span class="sc">|&gt;</span> <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">page_no =</span> <span class="fu">ceiling</span>(<span class="fu">row_number</span>() <span class="sc">/</span> (rows_page <span class="sc">*</span> columns_page)))</span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>  <span class="co">#plot each page from a nested table</span></span>
-<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>  d_plots <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span></span>
-<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(qc_type, <span class="st">"BLK|RQC"</span>), <span class="sc">!</span><span class="fu">str_detect</span>(lipid, <span class="st">"ISTD"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(d_pages, <span class="at">by =</span> <span class="st">"lipid"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(page_no) <span class="sc">|&gt;</span> </span>
-<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">plt =</span> <span class="fu">map</span>(data, <span class="sc">~</span> <span class="fu">plot_page</span>(., rows_page, columns_page)))</span>
-<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Save pages to a PDF. </span></span>
-<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pdf</span>(<span class="at">file =</span> <span class="fu">here</span>(<span class="fu">paste0</span>(<span class="st">"output/runscatter_"</span>, <span class="fu">quo_name</span>(<span class="fu">enquo</span>(var)), <span class="st">".pdf"</span>)),</span>
-<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">onefile =</span> <span class="cn">FALSE</span>, <span class="at">width =</span> <span class="dv">280</span><span class="sc">/</span><span class="fl">25.4</span>, <span class="at">height =</span> <span class="dv">180</span><span class="sc">/</span><span class="fl">25.4</span>)</span>
-<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>  <span class="co">#d_plots$plt </span></span>
-<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(purrr<span class="sc">::</span><span class="fu">walk</span>(d_plots<span class="sc">$</span>plt, print)) <span class="co"># use this to prevent printing of index</span></span>
-<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
-<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a><span class="co"># and run it twice, plotting raw areas and concentrations</span></span>
-<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a><span class="fu">runscatter</span>(d_full, area)</span>
-<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; quartz_off_screen </span></span>
-<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                 2</span></span>
-<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a><span class="fu">runscatter</span>(d_full, conc_adj)</span>
-<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; quartz_off_screen </span></span>
-<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                 2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="runscatter-function-fulldataset" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-message="false" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>runscatter <span class="ot">&lt;-</span> <span class="cf">function</span>(data, var){</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span> <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(qc_type, <span class="st">"BLANK|RQC"</span>))</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  plot_page <span class="ot">&lt;-</span> <span class="cf">function</span>(data, nrows, ncols){</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>   <span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x=</span>run_no, <span class="at">y=</span>{{var}})) <span class="sc">+</span> </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> qc_type, <span class="at">fill =</span> qc_type, <span class="at">shape  =</span> qc_type),</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">size =</span> <span class="dv">1</span>, <span class="at">alpha =</span><span class="fl">0.7</span>, <span class="at">stroke =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>          <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(lipid), <span class="at">ncol =</span> ncols, <span class="at">nrow =</span> nrows, <span class="at">scales=</span><span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>          <span class="fu">geom_smooth</span>(<span class="at">data=</span> <span class="fu">subset</span>(data, qc_type<span class="sc">==</span><span class="st">"BQC"</span>), <span class="fu">aes</span>(<span class="at">x=</span>run_no, <span class="at">y=</span>{{var}}), </span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">span =</span> <span class="fl">0.75</span>, <span class="at">formula =</span> y <span class="sc">~</span> x, <span class="at">se =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>                      <span class="at">na.rm =</span> <span class="cn">TRUE</span>, <span class="at">color =</span> <span class="st">"brown3"</span>, <span class="at">linewidth =</span> .<span class="dv">7</span>)<span class="sc">+</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_shape_manual</span>(<span class="at">na.value =</span> <span class="cn">NA</span>, <span class="at">values =</span> qc_shapes) <span class="sc">+</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> qc_colors, <span class="at">na.value =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> qc_colors, <span class="at">na.value =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fu">max</span>(d_full<span class="sc">$</span>run_no), <span class="at">by =</span> <span class="dv">100</span> )) <span class="sc">+</span> </span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>          <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="cn">NA</span>)) <span class="sc">+</span> </span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>          <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">8</span>) </span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>   }</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>  rows_page <span class="ot">=</span> <span class="dv">5</span></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>  columns_page <span class="ot">=</span> <span class="dv">5</span></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>  <span class="co">#get a table with page numbers for each lipid species</span></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>  d_pages <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span> <span class="fu">select</span>(lipid) <span class="sc">|&gt;</span> <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">page_no =</span> <span class="fu">ceiling</span>(<span class="fu">row_number</span>() <span class="sc">/</span> (rows_page <span class="sc">*</span> columns_page)))</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>  <span class="co">#plot each page from a nested table</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>  d_plots <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span></span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(qc_type, <span class="st">"BLK|RQC"</span>), <span class="sc">!</span><span class="fu">str_detect</span>(lipid, <span class="st">"ISTD"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(d_pages, <span class="at">by =</span> <span class="st">"lipid"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(page_no) <span class="sc">|&gt;</span> </span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">nest</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">plt =</span> <span class="fu">map</span>(data, <span class="sc">~</span> <span class="fu">plot_page</span>(., rows_page, columns_page)))</span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Save pages to a PDF. </span></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pdf</span>(<span class="at">file =</span> <span class="fu">here</span>(<span class="fu">paste0</span>(<span class="st">"output/runscatter_"</span>, <span class="fu">quo_name</span>(<span class="fu">enquo</span>(var)), <span class="st">".pdf"</span>)),</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>      <span class="at">onefile =</span> <span class="cn">FALSE</span>, <span class="at">width =</span> <span class="dv">280</span><span class="sc">/</span><span class="fl">25.4</span>, <span class="at">height =</span> <span class="dv">180</span><span class="sc">/</span><span class="fl">25.4</span>)</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>  <span class="co">#d_plots$plt </span></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">invisible</span>(purrr<span class="sc">::</span><span class="fu">walk</span>(d_plots<span class="sc">$</span>plt, print)) <span class="co"># use this to prevent printing of index</span></span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dev.off</span>()</span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a><span class="co"># and run it twice, plotting raw areas and concentrations</span></span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a><span class="fu">runscatter</span>(d_full, area)</span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a><span class="fu">runscatter</span>(d_full, conc_adj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="runscatter-function-fulldataset-1" class="cell-output cell-output-display">
+<strong>agg_record_285652944:</strong> 2
+</div>
+<div id="runscatter-function-fulldataset-2" class="cell-output cell-output-display">
+<strong>agg_record_285652944:</strong> 2
+</div>
 </div>
 </section>
 <section id="qc-filtering-full-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="qc-filtering-full-dataset">18. QC-Filtering (Full Dataset)</h2>
 <p>To evaluate analysis quality and filter the data, we calculate a QC metric for each lipid species and apply QC filtering using %CV &lt; 25% and a signal-to-blank ratio &gt; 10 as criteria. You can modify these parameters and see how it affects the number of species that pass/fail the filtering step. Before we calculate the QC matrics, we remove that outlier sample identified in Section 14.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>cv <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">sd</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)<span class="sc">/</span><span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>d_full <span class="ot">&lt;-</span> d_full <span class="sc">|&gt;</span> <span class="fu">filter</span>(sample_id <span class="sc">!=</span> <span class="st">"LT_batch6_51"</span>)</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Get QC metrics</span></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>d_qc <span class="ot">&lt;-</span> d_full<span class="sc">|&gt;</span> </span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(lipid) <span class="sc">|&gt;</span> </span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">signal_blank_ratio =</span> <span class="fu">median</span>(area[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>], <span class="at">na.rm  =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> </span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">median</span>(area[qc_type <span class="sc">==</span> <span class="st">"BLANK"</span>], <span class="at">na.rm  =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">cv_qc_area =</span> <span class="fu">cv</span>(area[qc_type <span class="sc">==</span> <span class="st">"QC"</span>]),</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">cv_qc_concadj =</span> <span class="fu">cv</span>(conc_adj[qc_type <span class="sc">==</span> <span class="st">"QC"</span>]), </span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">cv_sample_area =</span> <span class="fu">cv</span>(area[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>]),</span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">cv_sample_concadj =</span> <span class="fu">cv</span>(conc_adj[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>]), </span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_conc =</span> <span class="fu">mean</span>(conc_adj[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the QC metrics</span></span>
-<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>d_qc <span class="ot">&lt;-</span> d_qc <span class="sc">|&gt;</span> </span>
-<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( </span>
-<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">qc_pass =</span> </span>
-<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>      cv_qc_concadj <span class="sc">&lt;</span> <span class="dv">25</span> <span class="sc">&amp;</span> </span>
-<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>      signal_blank_ratio <span class="sc">&gt;</span> <span class="dv">10</span> <span class="sc">&amp;</span></span>
-<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>      <span class="sc">!</span><span class="fu">str_detect</span>(lipid, <span class="st">"ISTD"</span>))</span>
-<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste0</span>(<span class="st">"QC filtering: "</span>, <span class="fu">nrow</span>(d_qc[d_qc<span class="sc">$</span>qc_pass, ]), <span class="st">" of "</span>, <span class="fu">nrow</span>(d_qc), <span class="st">" species passed QC"</span>))</span>
-<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; QC filtering: 319 of 413 species passed QC</span></span>
+<div id="cell-39" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#label: qc-filt-full</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>cv <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">sd</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)<span class="sc">/</span><span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>d_full <span class="ot">&lt;-</span> d_full <span class="sc">|&gt;</span> <span class="fu">filter</span>(sample_id <span class="sc">!=</span> <span class="st">"LT_batch6_51"</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get QC metrics</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>d_qc <span class="ot">&lt;-</span> d_full<span class="sc">|&gt;</span> </span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(lipid) <span class="sc">|&gt;</span> </span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">signal_blank_ratio =</span> <span class="fu">median</span>(area[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>], <span class="at">na.rm  =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> </span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">median</span>(area[qc_type <span class="sc">==</span> <span class="st">"BLANK"</span>], <span class="at">na.rm  =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">cv_qc_area =</span> <span class="fu">cv</span>(area[qc_type <span class="sc">==</span> <span class="st">"QC"</span>]),</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">cv_qc_concadj =</span> <span class="fu">cv</span>(conc_adj[qc_type <span class="sc">==</span> <span class="st">"QC"</span>]), </span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">cv_sample_area =</span> <span class="fu">cv</span>(area[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>]),</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">cv_sample_concadj =</span> <span class="fu">cv</span>(conc_adj[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>]), </span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_conc =</span> <span class="fu">mean</span>(conc_adj[qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the QC metrics</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>d_qc <span class="ot">&lt;-</span> d_qc <span class="sc">|&gt;</span> </span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( </span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">qc_pass =</span> </span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>      cv_qc_concadj <span class="sc">&lt;</span> <span class="dv">25</span> <span class="sc">&amp;</span> </span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>      signal_blank_ratio <span class="sc">&gt;</span> <span class="dv">10</span> <span class="sc">&amp;</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>      <span class="sc">!</span><span class="fu">str_detect</span>(lipid, <span class="st">"ISTD"</span>))</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste0</span>(<span class="st">"QC filtering: "</span>, <span class="fu">nrow</span>(d_qc[d_qc<span class="sc">$</span>qc_pass, ]), <span class="st">" of "</span>, <span class="fu">nrow</span>(d_qc), <span class="st">" species passed QC"</span>))</span>
 <span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a><span class="co"># QC-filter dataset</span></span>
 <span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>d_filtered <span class="ot">&lt;-</span> d_full <span class="sc">|&gt;</span> </span>
 <span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(d_qc, <span class="at">by =</span> <span class="st">"lipid"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>QC filtering: 319 of 413 species passed QC</code></pre>
+</div>
 </div>
 </section>
 <section id="principal-component-analysis-full-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="principal-component-analysis-full-dataset">19. Principal Component Analysis (Full Dataset)</h2>
 <p>As in Section 13, we check the final data using PCA plots</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(d_filtered, conc_adj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
+<div id="cell-pca-fulldata" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(d_filtered, conc_adj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="PHM5002-Tutorial_files/figure-html/pca-full-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="PHM5002-Tutorial_files/figure-html/pca-fulldata-output-1.png" id="pca-fulldata" width="420" height="420" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -850,15 +1294,13 @@ Important
 </section>
 <section id="saving-final-dataset-full-dataset" class="level2">
 <h2 class="anchored" data-anchor-id="saving-final-dataset-full-dataset">20. Saving Final Dataset (Full Dataset)</h2>
-<p>We now save the final, drift-corrected and QC-filtered concentration data as a wide CSV table, which then will be used for Part 2. Have fun! :)</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># QC filter data</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>d_final <span class="ot">&lt;-</span> d_filtered <span class="sc">|&gt;</span> </span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>, <span class="sc">!</span><span class="fu">str_detect</span>(lipid, <span class="st">"ISTD"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> <span class="fu">c</span>(sample_id, qc_type), <span class="at">names_from =</span> <span class="st">"lipid"</span>, <span class="at">values_from =</span> <span class="st">"conc_adj"</span>) </span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(d_final, <span class="fu">here</span>(<span class="st">"output/results-full.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>We save the final, drift-corrected and QC-filtered concentration data as a wide CSV table.</p>
+<div id="export-results-fulldata" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;r&quot;}}" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>d_final <span class="ot">&lt;-</span> d_filtered <span class="sc">|&gt;</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(qc_type <span class="sc">==</span> <span class="st">"SAMPLE"</span>, <span class="sc">!</span><span class="fu">str_detect</span>(lipid, <span class="st">"ISTD"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">id_cols =</span> <span class="fu">c</span>(sample_id, qc_type), <span class="at">names_from =</span> <span class="st">"lipid"</span>, <span class="at">values_from =</span> <span class="st">"conc_adj"</span>) </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(d_final, <span class="fu">here</span>(<span class="st">"output/results-full.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
